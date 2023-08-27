@@ -1,11 +1,10 @@
 pub mod file_io;
-pub mod input_output;
+pub mod gpio;
 
-use crate::file_io::FileIO;
+use crate::file_io::FileIOImpl;
+use crate::gpio::{Direction, RpiGpioController};
 
 fn main() {
-    let file_io = FileIO {
-        file_path: String::from("test"),
-    };
+    let gpio_controller = RpiGpioController::new(Box::new(FileIOImpl {}), Direction::Out, 10);
     println!("Hello, world!");
 }

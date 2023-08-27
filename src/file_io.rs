@@ -1,13 +1,26 @@
-use crate::input_output::InputOutput;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
 
-pub struct FileIO {
-    pub file_path: String,
+pub trait FileIO {
+    fn write(&self, file_path: &str, data: &str) -> std::io::Result<()>;
+    fn read(&self, file_path: &str) -> std::io::Result<String>;
 }
 
-impl InputOutput for FileIO {
-    fn write(&self) -> () {}
+pub struct FileIOImpl {}
 
-    fn read(&self) -> String {
-        String::from("")
+impl FileIO for FileIOImpl {
+    fn write(&self, file_path: &str, data: &str) -> std::io::Result<()> {
+        let mut file = File::open(file_path)?;
+        file.write_all(data.as_bytes())?;
+        Ok(())
+    }
+
+    fn read(&self, file_path: &str) -> std::io::Result<String> {
+        let file = File::open(file_path)?;
+        let mut buffer_reader = BufReader::new(file);
+        let mut contents = String::new();
+        buffer_reader.read_to_string(&mut contents)?;
+        Ok(contents)
     }
 }
