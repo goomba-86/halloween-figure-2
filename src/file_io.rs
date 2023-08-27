@@ -1,7 +1,9 @@
+use mockall::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
+#[automock]
 pub trait FileIO {
     fn write(&self, file_path: &str, data: &str) -> std::io::Result<()>;
     fn read(&self, file_path: &str) -> std::io::Result<String>;

@@ -82,9 +82,24 @@ impl GpioController for RpiGpioController {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockall::*;
 
     #[test]
-    fn test_successful_direction_setting() {
-        assert!(true);
+    fn test_create_new_gpio_controller() {
+        let mut mock_file_io = crate::file_io::MockFileIO::new();
+        mock_file_io
+            .expect_write()
+            .with(predicate::eq("/sys/class/gpio/export"), predicate::eq("1"))
+            .returning(|_file_path, _data| Ok(()));
+        mock_file_io
+            .expect_write()
+            .with(
+                predicate::eq("/sys/class/gpio/gpio1/direction"),
+                predicate::eq("out"),
+            )
+            .returning(|_file_path, _data| Ok(()));
+
+        let gpio_controller = RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1);
+        assert!(gpio_controller.is_ok());
     }
 }
