@@ -71,7 +71,24 @@ impl RpiGpioController {
 
 impl GpioController for RpiGpioController {
     fn write(&self, pin_value: PinValue) -> std::io::Result<()> {
-        Ok(())
+        match pin_value {
+            PinValue::High => self.file_io.write(
+                &format!(
+                    "{}/gpio{}/value",
+                    RpiGpioController::GPIO_SYSFS_PATH,
+                    self.pin_number
+                ),
+                "1",
+            ),
+            PinValue::Low => self.file_io.write(
+                &format!(
+                    "{}/gpio{}/value",
+                    RpiGpioController::GPIO_SYSFS_PATH,
+                    self.pin_number
+                ),
+                "0",
+            ),
+        }
     }
 
     fn read(&self) -> std::io::Result<PinValue> {
@@ -83,9 +100,60 @@ impl GpioController for RpiGpioController {
 mod tests {
     use super::*;
     use mockall::*;
+    use std::io::{Error, ErrorKind};
 
     #[test]
     fn test_create_new_gpio_controller() {
+        let mock_file_io = set_up_file_io_initialization_mocks();
+        let gpio_controller = RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1);
+        assert!(gpio_controller.is_ok());
+    }
+
+    #[test]
+    fn test_pin_export_fails_in_creation() {
+        let mut mock_file_io = crate::file_io::MockFileIO::new();
+        mock_file_io
+            .expect_write()
+            .with(predicate::eq("/sys/class/gpio/export"), predicate::eq("1"))
+            .returning(|_file_path, _data| Err(Error::new(ErrorKind::Other, "File not found.")));
+
+        let gpio_controller = RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1);
+        assert!(gpio_controller.is_err());
+    }
+
+    #[test]
+    fn test_that_high_pin_value_is_written_correctly() {
+        let mut mock_file_io = set_up_file_io_initialization_mocks();
+        mock_file_io
+            .expect_write()
+            .with(
+                predicate::eq("/sys/class/gpio/gpio1/value"),
+                predicate::eq("1"),
+            )
+            .returning(|_file_path, _data| Ok(()));
+        let gpio_controller =
+            RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1).unwrap();
+
+        let _ = gpio_controller.write(PinValue::High);
+    }
+
+    #[test]
+    fn test_that_low_pin_value_is_written_correctly() {
+        let mut mock_file_io = set_up_file_io_initialization_mocks();
+        mock_file_io
+            .expect_write()
+            .with(
+                predicate::eq("/sys/class/gpio/gpio1/value"),
+                predicate::eq("0"),
+            )
+            .returning(|_file_path, _data| Ok(()));
+        let gpio_controller =
+            RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1).unwrap();
+
+        let _ = gpio_controller.write(PinValue::Low);
+    }
+
+    fn set_up_file_io_initialization_mocks() -> crate::file_io::MockFileIO {
         let mut mock_file_io = crate::file_io::MockFileIO::new();
         mock_file_io
             .expect_write()
@@ -98,8 +166,6 @@ mod tests {
                 predicate::eq("out"),
             )
             .returning(|_file_path, _data| Ok(()));
-
-        let gpio_controller = RpiGpioController::new(Box::new(mock_file_io), Direction::Out, 1);
-        assert!(gpio_controller.is_ok());
+        mock_file_io
     }
 }
