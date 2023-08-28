@@ -48,46 +48,34 @@ impl RpiGpioController {
 
     fn set_direction(&self, direction: Direction) -> std::io::Result<()> {
         match direction {
-            Direction::Out => self.file_io.write(
-                &format!(
-                    "{}/gpio{}/direction",
-                    RpiGpioController::GPIO_SYSFS_PATH,
-                    self.pin_number
-                ),
-                "out",
-            )?,
-            Direction::In => self.file_io.write(
-                &format!(
-                    "{}/gpio{}/direction",
-                    RpiGpioController::GPIO_SYSFS_PATH,
-                    self.pin_number
-                ),
-                "in",
-            )?,
+            Direction::Out => self
+                .file_io
+                .write(&format!("{}/direction", self.gpio_pin_path()), "out")?,
+            Direction::In => self
+                .file_io
+                .write(&format!("{}/direction", self.gpio_pin_path()), "in")?,
         }
         Ok(())
+    }
+
+    fn gpio_pin_path(&self) -> String {
+        format!(
+            "{}/gpio{}",
+            RpiGpioController::GPIO_SYSFS_PATH,
+            self.pin_number
+        )
     }
 }
 
 impl GpioController for RpiGpioController {
     fn write(&self, pin_value: PinValue) -> std::io::Result<()> {
         match pin_value {
-            PinValue::High => self.file_io.write(
-                &format!(
-                    "{}/gpio{}/value",
-                    RpiGpioController::GPIO_SYSFS_PATH,
-                    self.pin_number
-                ),
-                "1",
-            ),
-            PinValue::Low => self.file_io.write(
-                &format!(
-                    "{}/gpio{}/value",
-                    RpiGpioController::GPIO_SYSFS_PATH,
-                    self.pin_number
-                ),
-                "0",
-            ),
+            PinValue::High => self
+                .file_io
+                .write(&format!("{}/value", self.gpio_pin_path()), "1"),
+            PinValue::Low => self
+                .file_io
+                .write(&format!("{}/value", self.gpio_pin_path()), "0"),
         }
     }
 
