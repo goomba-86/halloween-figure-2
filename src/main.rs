@@ -5,6 +5,6 @@ use crate::file_io::FileIOImpl;
 use crate::gpio::{Direction, RpiGpioController};
 
 fn main() {
-    let gpio_controller = RpiGpioController::new(Box::new(FileIOImpl {}), Direction::Out, 10);
+    let gpio_controller = RpiGpioController::new(FileIOImpl {}, Direction::Out, 10);
     println!("Hello, world!");
 }
