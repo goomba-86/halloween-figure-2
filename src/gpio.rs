@@ -1,4 +1,5 @@
 use crate::file_io::FileIO;
+use std::{thread, time};
 
 pub enum Direction {
     In,
@@ -37,7 +38,9 @@ where
         };
 
         rpi_gpio_controller.export()?;
+        Self::sleep(50);
         rpi_gpio_controller.set_direction(direction)?;
+        Self::sleep(50);
         Ok(rpi_gpio_controller)
     }
 
@@ -67,6 +70,10 @@ where
             RpiGpioController::<T>::GPIO_SYSFS_PATH,
             self.pin_number
         )
+    }
+
+    fn sleep(duration_milli_seconds: u64) {
+        thread::sleep(time::Duration::from_millis(duration_milli_seconds))
     }
 }
 

@@ -20,8 +20,9 @@ where
     }
 
     pub fn turn(&self, count: i32) -> Result<()> {
+        let absolute_count = count.abs();
         if count > 0 {
-            for _ in 0..count {
+            for _ in 0..absolute_count {
                 self.do_step1()?;
                 self.do_step2()?;
                 self.do_step3()?;
@@ -32,7 +33,7 @@ where
                 self.do_step8()?;
             }
         } else {
-            for _ in 0..count {
+            for _ in 0..absolute_count {
                 self.do_step8()?;
                 self.do_step7()?;
                 self.do_step6()?;
