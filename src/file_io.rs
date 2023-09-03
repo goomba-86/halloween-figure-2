@@ -2,11 +2,13 @@ use mockall::*;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::path::Path;
 
 #[automock]
 pub trait FileIO {
     fn write(&self, file_path: &str, data: &str) -> std::io::Result<()>;
     fn read(&self, file_path: &str) -> std::io::Result<String>;
+    fn exists(&self, path: &str) -> bool;
 }
 
 pub struct FileIOImpl {}
@@ -43,5 +45,9 @@ impl FileIO for FileIOImpl {
         let mut contents = String::new();
         buffer_reader.read_to_string(&mut contents)?;
         Ok(contents)
+    }
+
+    fn exists(&self, path: &str) -> bool {
+        Path::new(path).exists()
     }
 }

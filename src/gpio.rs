@@ -45,6 +45,10 @@ where
     }
 
     fn export(&self) -> std::io::Result<()> {
+        if self.file_io.exists(&self.gpio_pin_path()) {
+            return Ok(());
+        }
+
         self.file_io.write(
             &format!("{}/export", RpiGpioController::<T>::GPIO_SYSFS_PATH),
             &self.pin_number.to_string(),
