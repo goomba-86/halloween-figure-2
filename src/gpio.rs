@@ -1,4 +1,5 @@
 use crate::file_io::FileIO;
+use mockall::*;
 use std::{thread, time};
 
 pub enum Direction {
@@ -11,6 +12,7 @@ pub enum PinValue {
     Low,
 }
 
+#[automock]
 pub trait GpioController {
     fn write(&self, pin_value: PinValue) -> std::io::Result<()>;
     fn read(&self) -> std::io::Result<PinValue>;
