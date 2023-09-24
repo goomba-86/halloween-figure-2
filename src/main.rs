@@ -24,12 +24,19 @@ fn main() -> Result<()> {
     thread::spawn(|| {
         let led_controller =
             LedController::new(RpiGpioController::new(FileIOImpl {}, Direction::Out, 13).unwrap());
-        let led_blink_interval = time::Duration::from_millis(500);
+        let led_blink_intervals = vec![200, 100, 100, 500, 2000, 200, 1000, 3000];
+        let mut blink_index = 0;
         loop {
             led_controller.turn_on().unwrap();
-            thread::sleep(led_blink_interval);
+            thread::sleep(time::Duration::from_millis(
+                led_blink_intervals[blink_index],
+            ));
             led_controller.turn_off().unwrap_or_default();
-            thread::sleep(led_blink_interval);
+            thread::sleep(time::Duration::from_millis(led_blink_intervals[blink_index]) / 2);
+            blink_index += 1;
+            if blink_index >= led_blink_intervals.len() {
+                blink_index = 0;
+            }
         }
     });
 

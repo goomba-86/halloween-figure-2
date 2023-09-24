@@ -106,7 +106,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockall::*;
     use std::io::{Error, ErrorKind};
 
     #[test]
