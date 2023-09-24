@@ -1,49 +1,45 @@
 pub mod file_io;
 pub mod gpio;
+pub mod head_controller;
 pub mod led_controller;
+pub mod light_controller;
 pub mod stepper_motor_controller;
 
-use crate::file_io::FileIOImpl;
-use crate::gpio::{Direction, RpiGpioController};
-use crate::led_controller::LedController;
-use crate::stepper_motor_controller::StepperMotorController;
 use std::io::Result;
-use std::{thread, time};
+use std::sync::{Arc, Mutex};
+
+use light_controller::{start_flickering_light, LightControllerParameters};
+
+use head_controller::{start_turning_head, HeadControllerParameters};
 
 fn main() -> Result<()> {
-    let pins = vec![
-        RpiGpioController::new(FileIOImpl {}, Direction::Out, 12).unwrap(),
-        RpiGpioController::new(FileIOImpl {}, Direction::Out, 16).unwrap(),
-        RpiGpioController::new(FileIOImpl {}, Direction::Out, 20).unwrap(),
-        RpiGpioController::new(FileIOImpl {}, Direction::Out, 21).unwrap(),
-    ];
+    let stop_threads = Arc::new(Mutex::new(false));
+    let head_controller_params = HeadControllerParameters {
+        pins: vec![12, 16, 20, 21],
+        speed: 5,
+        degrees: 30,
+        turn_wait_milli_seconds: 3000,
+    };
+    let head_controller_handle =
+        start_turning_head(head_controller_params, Arc::clone(&stop_threads));
 
-    let stepper_motor = StepperMotorController::new(pins, 5);
-    let turn_wait_milli_seconds = time::Duration::from_millis(3000);
+    let light_controller_params = LightControllerParameters {
+        flickers: vec![200, 100, 100, 500, 2000, 200, 1000, 3000],
+    };
+    let light_controller_handle =
+        start_flickering_light(light_controller_params, Arc::clone(&stop_threads));
 
-    thread::spawn(|| {
-        let led_controller =
-            LedController::new(RpiGpioController::new(FileIOImpl {}, Direction::Out, 13).unwrap());
-        let led_blink_intervals = vec![200, 100, 100, 500, 2000, 200, 1000, 3000];
-        let mut blink_index = 0;
-        loop {
-            led_controller.turn_on().unwrap();
-            thread::sleep(time::Duration::from_millis(
-                led_blink_intervals[blink_index],
-            ));
-            led_controller.turn_off().unwrap_or_default();
-            thread::sleep(time::Duration::from_millis(led_blink_intervals[blink_index]) / 2);
-            blink_index += 1;
-            if blink_index >= led_blink_intervals.len() {
-                blink_index = 0;
-            }
-        }
-    });
+    std::thread::sleep(std::time::Duration::from_millis(20000));
 
-    loop {
-        stepper_motor.turn_degrees(30)?;
-        thread::sleep(turn_wait_milli_seconds);
-        stepper_motor.turn_degrees(-30)?;
-        thread::sleep(turn_wait_milli_seconds);
-    }
+    println!("Sending stop signal to threads...");
+    let mut stop = stop_threads.lock().unwrap();
+    *stop = true;
+    println!("Signal sent");
+
+    head_controller_handle.join().unwrap();
+    light_controller_handle.join().unwrap();
+
+    println!("Both threads joined to main.");
+
+    Ok(())
 }

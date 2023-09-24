@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 mockall = "0.11.4"
+signal-hook = "0.3.17"
