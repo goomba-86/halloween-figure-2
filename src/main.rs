@@ -8,7 +8,7 @@ pub mod stepper_motor_controller;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 
-use light_controller::{start_flickering_light, LightControllerParameters};
+use light_controller::{start_flickering_light, LightControllerParameters, LightFlickerTime};
 
 use head_controller::{start_turning_head, HeadControllerParameters};
 
@@ -24,7 +24,40 @@ fn main() -> Result<()> {
         start_turning_head(head_controller_params, Arc::clone(&stop_threads));
 
     let light_controller_params = LightControllerParameters {
-        flickers: vec![200, 100, 100, 500, 2000, 200, 1000, 3000],
+        flickers: vec![
+            LightFlickerTime {
+                on_time: 100,
+                off_time: 500,
+            },
+            LightFlickerTime {
+                on_time: 100,
+                off_time: 500,
+            },
+            LightFlickerTime {
+                on_time: 100,
+                off_time: 100,
+            },
+            LightFlickerTime {
+                on_time: 100,
+                off_time: 100,
+            },
+            LightFlickerTime {
+                on_time: 200,
+                off_time: 2000,
+            },
+            LightFlickerTime {
+                on_time: 100,
+                off_time: 1000,
+            },
+            LightFlickerTime {
+                on_time: 300,
+                off_time: 1000,
+            },
+            LightFlickerTime {
+                on_time: 500,
+                off_time: 5000,
+            },
+        ],
     };
     let _light_controller_handle =
         start_flickering_light(light_controller_params, Arc::clone(&stop_threads));
