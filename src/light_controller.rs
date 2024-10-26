@@ -20,7 +20,7 @@ pub fn start_flickering_light(
 ) -> JoinHandle<()> {
     std::thread::spawn(move || {
         let led_controller =
-            LedController::new(RpiGpioController::new(FileIOImpl {}, Direction::Out, 13).unwrap());
+            LedController::new(RpiGpioController::new(FileIOImpl {}, Direction::Out, 525).unwrap());
         let mut flicker_index = 0;
         while !*stop_thread.lock().unwrap() {
             led_controller.turn_on().unwrap_or_default();

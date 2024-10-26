@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 
 pub struct HeadControllerParameters {
-    pub pins: Vec<u8>,
+    pub pins: Vec<u16>,
     pub speed: u64,
     pub degrees: i32,
     pub turn_wait_milli_seconds: u64,

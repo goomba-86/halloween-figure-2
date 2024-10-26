@@ -20,7 +20,7 @@ pub trait GpioController {
 
 pub struct RpiGpioController<T: FileIO> {
     file_io: T,
-    pub pin_number: u8,
+    pub pin_number: u16,
 }
 
 impl<T> RpiGpioController<T>
@@ -32,7 +32,7 @@ where
     pub fn new(
         file_io: T,
         direction: Direction,
-        pin_number: u8,
+        pin_number: u16,
     ) -> std::io::Result<RpiGpioController<T>> {
         let rpi_gpio_controller = RpiGpioController {
             file_io,

@@ -15,7 +15,7 @@ use head_controller::{start_turning_head, HeadControllerParameters};
 fn main() -> Result<()> {
     let stop_threads = Arc::new(Mutex::new(false));
     let head_controller_params = HeadControllerParameters {
-        pins: vec![12, 16, 20, 21],
+        pins: vec![524, 528, 532, 533],
         speed: 5,
         degrees: 30,
         turn_wait_milli_seconds: 3000,
